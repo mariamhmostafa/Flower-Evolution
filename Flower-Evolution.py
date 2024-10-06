@@ -16,49 +16,69 @@ class Flower:
             random.randint(0, 255),   # petal_blue
             random.randint(0, 7)      # num_petals
         ]
-        
-
-    def __repr__(self):
-        return f"Flower(DNA={self.dna})"
 
 def initialize_population(size=8):
     return [Flower() for _ in range(size)]
 
-def selection(population):
+def select(population):
     weights = []
     for flower in population:
         weights.append(flower.fitness)
-    parent1 = random.choices(population, weights=weights, k=1)
-    parent2 = random.choices(population, weights=weights, k=1)
-    if parent1 == parent2:
-        return selection(population)
-    return parent1[0], parent2[0]
+    parents = random.choices(population, weights=weights, k=4)
+    return parents
 
-def crossover(parent1, parent2):
-    child = Flower()
-    crossover_point = random.randint(0, len(parent1.dna)-1)
-    child.dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
-    return child
+def duplicate(parents):
+    duplicated_parents = parents * 2
+    # random.shuffle(duplicated_parents)
+    return duplicated_parents
 
-def mutate(flower):
-    for i in range(len(flower.dna)):
-        if random.random() < mutation_rate:
-            flower.dna[i] = random.randint(0, 10) if i == 0 else random.randint(0, 255)
-    return flower
+def crossover(parents):
+    children = []
+    for i in range(0, len(parents), 2):
+        parent1 = parents[i]
+        parent2 = parents[i + 1]
+        child1 = Flower()
+        child2 = Flower()
+        crossover_point = random.randint(0, len(parent1.dna) - 1)
+        child1.dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
+        child2.dna = parent2.dna[:crossover_point] + parent1.dna[crossover_point:]
+        children.append(child1)
+        children.append(child2)
+    return children
+
+def mutate(children):
+    for child in children:
+        for i in range(len(child.dna)):
+            if random.random() < mutation_rate:
+                if i == 0:
+                    child.dna[i] = random.randint(0, 10)
+                elif i == 7:
+                    child.dna[i] = random.randint(0, 7)
+                else:
+                    child.dna[i] = random.randint(0, 255)
+    return children
 
 def next_generation():
     global generation
     global population
-    new_population = []
-    for _ in range(len(population)):
-        parent1, parent2 = selection(population)
-        print("parents:")
-        print(parent1, parent2)
-        child = crossover(parent1, parent2)
-        print("child:" , child)
-        child = mutate(child)
-        print("child:" , child)
-        new_population.append(child)
+    
+    parents = select(population)
+
+    duplicated_parents = duplicate(parents)
+    print("parents:")
+    for flower in duplicated_parents:
+        print(flower.dna)
+
+    children = crossover(duplicated_parents)
+    print("children:" )
+    for flower in children:
+        print(flower.dna)
+
+    new_population = mutate(children)
+    print("new population:")
+    for flower in new_population:
+        print(flower.dna)
+
     population = new_population
     generation += 1
     return population
@@ -81,8 +101,9 @@ if __name__ == "__main__":
     print (random_flower_fitness)
     increment_fitness(population[random_flower_fitness])
     for flower in population:
-        print(flower)
+        print(flower.dna)
     print ("next generation")
     next_generation()
+    print("Final flowers: ")
     for flower in population:
-        print(flower)
+        print(flower.dna)
