@@ -116,7 +116,7 @@ def next_generation(canvas, population):
 
 def main():
     root = tk.Tk()
-    root.title("Flower Evolution - Hover to Increase Fitness")
+    root.title("Flower Evolution")
 
     canvas = tk.Canvas(root, width=800, height=500, bg="white")
     canvas.pack()
