@@ -9,14 +9,14 @@ class Flower:
         self.fitness = fitness
         self.canvas = canvas
         self.dna = dna if dna else [
-            random.randint(3, 10),    # center_size
+            random.randint(6, 15),    # center_size
             random.randint(0, 255),   # center_red
             random.randint(0, 255),   # center_green
             random.randint(0, 255),   # center_blue
             random.randint(0, 255),   # petal_red
             random.randint(0, 255),   # petal_green
             random.randint(0, 255),   # petal_blue
-            random.randint(5, 8)      # num_petals
+            random.randint(8,12)      # num_petals
         ]
         self.pos = pos
         self.petal_ids = []
@@ -24,25 +24,25 @@ class Flower:
         self.draw_flower()
 
     def draw_flower(self):
-        self.center_size = self.dna[0] + int(self.fitness * 2)  
+        self.center_size = self.dna[0]
         self.center_color = f'#{self.dna[1]:02x}{self.dna[2]:02x}{self.dna[3]:02x}'
         self.petal_color = f'#{self.dna[4]:02x}{self.dna[5]:02x}{self.dna[6]:02x}'
-
-        angle = 360 / self.dna[7]
-        for i in range(self.dna[7]):
-            radian_angle = math.radians(i * angle)
-            petal_x = self.pos[0] + math.cos(radian_angle) * (self.center_size + 2)
-            petal_y = self.pos[1] + math.sin(radian_angle) * (self.center_size + 2)
-            petal_id = self.canvas.create_oval(
-                petal_x - self.center_size / 1.5 , petal_y - self.center_size /1.5,
-                petal_x + self.center_size /1.5 , petal_y + self.center_size /1.5,
-                fill=self.petal_color, outline=""
-            )
-            self.petal_ids.append(petal_id)
+        if self.dna[7] != 0:
+            angle = 360 / self.dna[7]
+            for i in range(self.dna[7]):
+                radian_angle = math.radians(i * angle)
+                petal_x = self.pos[0] + math.cos(radian_angle) * (self.center_size + self.center_size + 5)
+                petal_y = self.pos[1] + math.sin(radian_angle) * (self.center_size + self.center_size + 5)
+                petal_id = self.canvas.create_oval(
+                    petal_x - self.center_size / 1 , petal_y - self.center_size / 1,
+                    petal_x + self.center_size / 1 , petal_y + self.center_size / 1,
+                    fill=self.petal_color, outline=""
+                )
+                self.petal_ids.append(petal_id)
 
         self.center_id = self.canvas.create_oval(
-            self.pos[0] - self.center_size, self.pos[1] - self.center_size,
-            self.pos[0] + self.center_size, self.pos[1] + self.center_size,
+            self.pos[0] - self.center_size * 2, self.pos[1] - self.center_size * 2,
+            self.pos[0] + self.center_size * 2, self.pos[1] + self.center_size * 2,
             fill=self.center_color, outline=""
         )
 
@@ -51,7 +51,7 @@ class Flower:
         return dist <= self.center_size
 
     def increase_fitness(self):
-        self.fitness += 0.1  
+        self.fitness += 0.005  
 
     def clear_flower(self):
         self.canvas.delete(self.center_id)
