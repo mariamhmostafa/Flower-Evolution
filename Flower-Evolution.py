@@ -82,36 +82,45 @@ def select(population):
     parents = random.choices(population, weights=weights, k=4)
     return parents
 
-def crossover(parents, canvas, size=8):
+def duplicate(parents):
+    return parents * 2
+
+def crossover(parents, canvas):
     children = []
     spacing = 100 
     y_position = 250
 
-    for i in range(size):
-        parent1 = parents[i % len(parents)]
-        parent2 = parents[(i + 1) % len(parents)]
-        child_dna = parent1.dna[:4] + parent2.dna[4:]
-        x_position = 50 + i * spacing
-        child = Flower(canvas, dna=child_dna, pos=(x_position, y_position))
-        children.append(child)
-
+    for i in range(0, len(parents), 2):
+        parent1 = parents[i]
+        parent2 = parents[i + 1]
+        x_position1 = 50 + i * spacing
+        x_position2 = 50 + (i+1) * spacing
+        crossover_point = random.randint(0, len(parent1.dna) - 1)
+        child1_dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
+        child2_dna = parent2.dna[:crossover_point] + parent1.dna[crossover_point:]
+        child1 = Flower(canvas, dna=child1_dna, pos=(x_position1, y_position))
+        child2 = Flower(canvas, dna=child2_dna, pos=(x_position2, y_position))
+        children.append(child1)
+        children.append(child2)
     return children
+
 
 def mutate(children):
     for child in children:
         for i in range(len(child.dna)):
             if random.random() < mutation_rate:
                 if i == 0:
-                    child.dna[i] = random.randint(3, 10)
+                    child.dna[i] = random.randint(6, 15)
                 elif i == 7:
-                    child.dna[i] = random.randint(5, 8)
+                    child.dna[i] = random.randint(0, 7)
                 else:
                     child.dna[i] = random.randint(0, 255)
     return children
 
 def next_generation(canvas, population):
     parents = select(population)
-    children = crossover(parents, canvas)
+    duplicated_parents = duplicate(parents)
+    children = crossover(duplicated_parents, canvas)
     new_population = mutate(children)
 
     for flower in population:
