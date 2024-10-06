@@ -16,7 +16,7 @@ class Flower:
             random.randint(0, 255),   # petal_red
             random.randint(0, 255),   # petal_green
             random.randint(0, 255),   # petal_blue
-            random.randint(8,12)      # num_petals
+            random.randint(0,7)      # num_petals
         ]
         self.pos = pos
         self.petal_ids = []
@@ -27,15 +27,23 @@ class Flower:
         self.center_size = self.dna[0]
         self.center_color = f'#{self.dna[1]:02x}{self.dna[2]:02x}{self.dna[3]:02x}'
         self.petal_color = f'#{self.dna[4]:02x}{self.dna[5]:02x}{self.dna[6]:02x}'
-        if self.dna[7] != 0:
+        self.stem_color = f'#3aba60'
+        stem_length = 120
+        stem_start = self.pos[1] + self.center_size * 2
+        stem_end = stem_start + stem_length
+        self.canvas.create_line(self.pos[0], stem_start, self.pos[0], stem_end, fill=self.stem_color, width=4)
+        if self.dna[7] > 0:
             angle = 360 / self.dna[7]
+            petal_radius = self.center_size * 1.2
+            distance_from_center = self.center_size * 1.8 
+
             for i in range(self.dna[7]):
                 radian_angle = math.radians(i * angle)
-                petal_x = self.pos[0] + math.cos(radian_angle) * (self.center_size + self.center_size + 5)
-                petal_y = self.pos[1] + math.sin(radian_angle) * (self.center_size + self.center_size + 5)
+                petal_x = self.pos[0] + math.cos(radian_angle) * distance_from_center
+                petal_y = self.pos[1] + math.sin(radian_angle) * distance_from_center
                 petal_id = self.canvas.create_oval(
-                    petal_x - self.center_size / 1 , petal_y - self.center_size / 1,
-                    petal_x + self.center_size / 1 , petal_y + self.center_size / 1,
+                    petal_x - petal_radius, petal_y - petal_radius,
+                    petal_x + petal_radius, petal_y + petal_radius,
                     fill=self.petal_color, outline=""
                 )
                 self.petal_ids.append(petal_id)
