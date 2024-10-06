@@ -1,49 +1,92 @@
+import tkinter as tk
 import random
+import math
 
 mutation_rate = 0.05
-generation = 0
-population = []
+
 class Flower:
-    def __init__(self):
-        self.fitness = 0.01
-        self.dna = [
-            random.randint(0, 10),    # center_size
+    def __init__(self, canvas, dna=None, fitness=0.01, pos=(0, 0)):
+        self.fitness = fitness
+        self.canvas = canvas
+        self.dna = dna if dna else [
+            random.randint(3, 10),    # center_size
             random.randint(0, 255),   # center_red
             random.randint(0, 255),   # center_green
             random.randint(0, 255),   # center_blue
             random.randint(0, 255),   # petal_red
             random.randint(0, 255),   # petal_green
             random.randint(0, 255),   # petal_blue
-            random.randint(0, 7)      # num_petals
+            random.randint(5, 8)      # num_petals
         ]
+        self.pos = pos
+        self.petal_ids = []
+        self.center_id = None
+        self.draw_flower()
 
-def initialize_population(size=8):
-    return [Flower() for _ in range(size)]
+    def draw_flower(self):
+        self.center_size = self.dna[0] + int(self.fitness * 2)  
+        self.center_color = f'#{self.dna[1]:02x}{self.dna[2]:02x}{self.dna[3]:02x}'
+        self.petal_color = f'#{self.dna[4]:02x}{self.dna[5]:02x}{self.dna[6]:02x}'
+
+        angle = 360 / self.dna[7]
+        for i in range(self.dna[7]):
+            radian_angle = math.radians(i * angle)
+            petal_x = self.pos[0] + math.cos(radian_angle) * (self.center_size + 2)
+            petal_y = self.pos[1] + math.sin(radian_angle) * (self.center_size + 2)
+            petal_id = self.canvas.create_oval(
+                petal_x - self.center_size / 1.5 , petal_y - self.center_size /1.5,
+                petal_x + self.center_size /1.5 , petal_y + self.center_size /1.5,
+                fill=self.petal_color, outline=""
+            )
+            self.petal_ids.append(petal_id)
+
+        self.center_id = self.canvas.create_oval(
+            self.pos[0] - self.center_size, self.pos[1] - self.center_size,
+            self.pos[0] + self.center_size, self.pos[1] + self.center_size,
+            fill=self.center_color, outline=""
+        )
+
+    def is_hovered(self, mouse_pos):
+        dist = math.sqrt((self.pos[0] - mouse_pos[0]) ** 2 + (self.pos[1] - mouse_pos[1]) ** 2)
+        return dist <= self.center_size
+
+    def increase_fitness(self):
+        self.fitness += 0.1  
+
+    def clear_flower(self):
+        self.canvas.delete(self.center_id)
+        for petal_id in self.petal_ids:
+            self.canvas.delete(petal_id)
+        self.petal_ids.clear()
+
+def initialize_population(canvas, size=8):
+    population = []
+    spacing = 100 
+    y_position = 250
+    for i in range(size):
+        x_position = 50 + i * spacing
+        flower = Flower(canvas, pos=(x_position, y_position))
+        population.append(flower)
+    return population
 
 def select(population):
-    weights = []
-    for flower in population:
-        weights.append(flower.fitness)
+    weights = [flower.fitness for flower in population]
     parents = random.choices(population, weights=weights, k=4)
     return parents
 
-def duplicate(parents):
-    duplicated_parents = parents * 2
-    # random.shuffle(duplicated_parents)
-    return duplicated_parents
-
-def crossover(parents):
+def crossover(parents, canvas, size=8):
     children = []
-    for i in range(0, len(parents), 2):
-        parent1 = parents[i]
-        parent2 = parents[i + 1]
-        child1 = Flower()
-        child2 = Flower()
-        crossover_point = random.randint(0, len(parent1.dna) - 1)
-        child1.dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
-        child2.dna = parent2.dna[:crossover_point] + parent1.dna[crossover_point:]
-        children.append(child1)
-        children.append(child2)
+    spacing = 100 
+    y_position = 250
+
+    for i in range(size):
+        parent1 = parents[i % len(parents)]
+        parent2 = parents[(i + 1) % len(parents)]
+        child_dna = parent1.dna[:4] + parent2.dna[4:]
+        x_position = 50 + i * spacing
+        child = Flower(canvas, dna=child_dna, pos=(x_position, y_position))
+        children.append(child)
+
     return children
 
 def mutate(children):
@@ -51,59 +94,48 @@ def mutate(children):
         for i in range(len(child.dna)):
             if random.random() < mutation_rate:
                 if i == 0:
-                    child.dna[i] = random.randint(0, 10)
+                    child.dna[i] = random.randint(3, 10)
                 elif i == 7:
-                    child.dna[i] = random.randint(0, 7)
+                    child.dna[i] = random.randint(5, 8)
                 else:
                     child.dna[i] = random.randint(0, 255)
     return children
 
-def next_generation():
-    global generation
-    global population
-    
+def next_generation(canvas, population):
     parents = select(population)
-
-    duplicated_parents = duplicate(parents)
-    print("parents:")
-    for flower in duplicated_parents:
-        print(flower.dna)
-
-    children = crossover(duplicated_parents)
-    print("children:" )
-    for flower in children:
-        print(flower.dna)
-
+    children = crossover(parents, canvas)
     new_population = mutate(children)
-    print("new population:")
+
+    for flower in population:
+        flower.clear_flower()
+
     for flower in new_population:
-        print(flower.dna)
+        flower.draw_flower()
 
-    population = new_population
-    generation += 1
-    return population
+    return new_population
 
-def increment_fitness(flower):
-    flower.fitness += 0.02
+def main():
+    root = tk.Tk()
+    root.title("Flower Evolution - Hover to Increase Fitness")
+
+    canvas = tk.Canvas(root, width=800, height=500, bg="white")
+    canvas.pack()
+
+    population = initialize_population(canvas)
+
+    def on_mouse_move(event):
+        for flower in population:
+            if flower.is_hovered((event.x, event.y)):
+                flower.increase_fitness()
+
+    def generate_next_generation():
+        nonlocal population
+        population = next_generation(canvas, population)
+
+    canvas.bind("<Motion>", on_mouse_move)
+    next_gen_button = tk.Button(root, text="Next Generation", command=generate_next_generation)
+    next_gen_button.pack()
+    root.mainloop()
 
 if __name__ == "__main__":
-    population = initialize_population()
-    random_flower_fitness = random.randint(0, 7)
-    print (random_flower_fitness)
-    increment_fitness(population[random_flower_fitness])
-    random_flower_fitness = random.randint(0, 7)
-    print (random_flower_fitness)
-    increment_fitness(population[random_flower_fitness])
-    random_flower_fitness = random.randint(0, 7)
-    print (random_flower_fitness)
-    increment_fitness(population[random_flower_fitness])
-    random_flower_fitness = random.randint(0, 7)
-    print (random_flower_fitness)
-    increment_fitness(population[random_flower_fitness])
-    for flower in population:
-        print(flower.dna)
-    print ("next generation")
-    next_generation()
-    print("Final flowers: ")
-    for flower in population:
-        print(flower.dna)
+    main()
