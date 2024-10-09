@@ -3,6 +3,7 @@ import random
 import math
 
 mutation_rate = 0.05
+generation = 0;
 
 class Flower:
     def __init__(self, canvas, dna=None, fitness=0.01, pos=(0, 0)):
@@ -114,15 +115,15 @@ def mutate(children):
     return children
 
 def next_generation(canvas, population):
+    global generation
     canvas.delete("all")
     parents = select(population)
     duplicated_parents = duplicate(parents)
     children = crossover(duplicated_parents, canvas)
     new_population = mutate(children)
-
     for flower in new_population:
         flower.draw_flower()
-
+    generation += 1
     return new_population
 
 def main():
@@ -131,6 +132,20 @@ def main():
 
     canvas = tk.Canvas(root, width=800, height=500, bg="white")
     canvas.pack()
+
+    control_frame = tk.Frame(root, bg="#f0f0f0", pady=10)
+    control_frame.pack(fill=tk.X)
+
+    generation_label = tk.Label(control_frame, text=f"Generation: {generation}", font=("Arial", 16, "bold"), fg="#333", bg="#f0f0f0")
+    generation_label.pack(side=tk.LEFT, padx=20)
+
+
+    next_gen_button = tk.Button(
+        control_frame, text="Next Generation", font=("Arial", 14, "bold"),
+        bg="#007f8a", fg="white", activebackground="#3ae1f0", padx=10, pady=5,
+        borderwidth=2, relief="raised", command=lambda: generate_next_generation()
+    )
+    next_gen_button.pack(side=tk.RIGHT, padx=20)
 
     population = initialize_population(canvas)
     for flower in population:
@@ -143,11 +158,15 @@ def main():
 
     def generate_next_generation():
         nonlocal population
+        global generation
         population = next_generation(canvas, population)
+        
+        # Update the generation number label
+        generation_label.config(text=f"Generation: {generation}")
 
+    # Bind mouse motion to the fitness increase functionality
     canvas.bind("<Motion>", on_mouse_move)
-    next_gen_button = tk.Button(root, text="Next Generation", command=generate_next_generation)
-    next_gen_button.pack()
+
     root.mainloop()
 
 if __name__ == "__main__":
