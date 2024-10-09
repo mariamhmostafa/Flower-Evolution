@@ -21,7 +21,7 @@ class Flower:
         self.pos = pos
         self.petal_ids = []
         self.center_id = None
-        self.draw_flower()
+        self.stem_id = None
 
     def draw_flower(self):
         self.center_size = self.dna[0]
@@ -31,7 +31,8 @@ class Flower:
         stem_length = 120
         stem_start = self.pos[1] + self.center_size * 2
         stem_end = stem_start + stem_length
-        self.canvas.create_line(self.pos[0], stem_start, self.pos[0], stem_end, fill=self.stem_color, width=4)
+        self.stem_id = self.canvas.create_line(self.pos[0], stem_start, self.pos[0], stem_end, fill=self.stem_color, width=4)
+        
         if self.dna[7] > 0:
             angle = 360 / self.dna[7]
             petal_radius = self.center_size * 1.2
@@ -57,15 +58,10 @@ class Flower:
     def is_hovered(self, mouse_pos):
         dist = math.sqrt((self.pos[0] - mouse_pos[0]) ** 2 + (self.pos[1] - mouse_pos[1]) ** 2)
         return dist <= self.center_size
-
+    
     def increase_fitness(self):
         self.fitness += 0.005  
 
-    def clear_flower(self):
-        self.canvas.delete(self.center_id)
-        for petal_id in self.petal_ids:
-            self.canvas.delete(petal_id)
-        self.petal_ids.clear()
 
 def initialize_population(canvas, size=8):
     population = []
@@ -78,8 +74,8 @@ def initialize_population(canvas, size=8):
     return population
 
 def select(population):
-    weights = [flower.fitness for flower in population]
-    parents = random.choices(population, weights=weights, k=4)
+    sorted_population = sorted(population, key=lambda flower: flower.fitness, reverse=True)
+    parents = sorted_population[:4]
     return parents
 
 def duplicate(parents):
@@ -118,13 +114,11 @@ def mutate(children):
     return children
 
 def next_generation(canvas, population):
+    canvas.delete("all")
     parents = select(population)
     duplicated_parents = duplicate(parents)
     children = crossover(duplicated_parents, canvas)
     new_population = mutate(children)
-
-    for flower in population:
-        flower.clear_flower()
 
     for flower in new_population:
         flower.draw_flower()
@@ -139,6 +133,8 @@ def main():
     canvas.pack()
 
     population = initialize_population(canvas)
+    for flower in population:
+        flower.draw_flower()
 
     def on_mouse_move(event):
         for flower in population:
