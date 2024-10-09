@@ -152,9 +152,16 @@ def main():
         flower.draw_flower()
 
     def on_mouse_move(event):
+        cursor_changed = False
         for flower in population:
             if flower.is_hovered((event.x, event.y)):
                 flower.increase_fitness()
+                canvas.config(cursor="crosshair")
+                cursor_changed = True
+                break
+        
+        if not cursor_changed:
+            canvas.config(cursor="")
 
     def generate_next_generation():
         nonlocal population
