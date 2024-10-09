@@ -55,6 +55,13 @@ class Flower:
             self.pos[0] + self.center_size * 2, self.pos[1] + self.center_size * 2,
             fill=self.center_color, outline=""
         )
+        self.fitness_label_id = self.canvas.create_text(
+            self.pos[0], self.pos[1] - self.center_size * 5, 
+            text=f"Fitness: {self.fitness:.2f}", font=("Arial", 10), fill="black"
+        )
+
+    def update_fitness_label(self):
+        self.canvas.itemconfig(self.fitness_label_id, text=f"Fitness: {self.fitness:.2f}")
 
     def is_hovered(self, mouse_pos):
         dist = math.sqrt((self.pos[0] - mouse_pos[0]) ** 2 + (self.pos[1] - mouse_pos[1]) ** 2)
@@ -62,6 +69,7 @@ class Flower:
     
     def increase_fitness(self):
         self.fitness += 0.005  
+        self.update_fitness_label()
 
 
 def initialize_population(canvas, size=8):
