@@ -161,10 +161,8 @@ def main():
         global generation
         population = next_generation(canvas, population)
         
-        # Update the generation number label
         generation_label.config(text=f"Generation: {generation}")
 
-    # Bind mouse motion to the fitness increase functionality
     canvas.bind("<Motion>", on_mouse_move)
 
     root.mainloop()
