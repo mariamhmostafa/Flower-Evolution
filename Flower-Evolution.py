@@ -163,6 +163,7 @@ def main():
         
         generation_label.config(text=f"Generation: {generation}")
 
+
     canvas.bind("<Motion>", on_mouse_move)
 
     root.mainloop()
