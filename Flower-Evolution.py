@@ -29,7 +29,7 @@ class Flower:
         self.center_color = f'#{self.dna[1]:02x}{self.dna[2]:02x}{self.dna[3]:02x}'
         self.petal_color = f'#{self.dna[4]:02x}{self.dna[5]:02x}{self.dna[6]:02x}'
         self.stem_color = f'#3aba60'
-        stem_length = 120
+        stem_length = 100
         stem_start = self.pos[1] + self.center_size * 2
         stem_end = stem_start + stem_length
         self.stem_id = self.canvas.create_line(self.pos[0], stem_start, self.pos[0], stem_end, fill=self.stem_color, width=4)
@@ -65,7 +65,7 @@ class Flower:
 
     def is_hovered(self, mouse_pos):
         dist = math.sqrt((self.pos[0] - mouse_pos[0]) ** 2 + (self.pos[1] - mouse_pos[1]) ** 2)
-        return dist <= self.center_size
+        return dist <= self.center_size * 2.5
     
     def increase_fitness(self):
         self.fitness += 0.005  
