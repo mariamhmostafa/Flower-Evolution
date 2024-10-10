@@ -92,23 +92,25 @@ def duplicate(parents):
 
 def crossover(parents, canvas):
     children = []
-    spacing = 100 
+    spacing = 100
     y_position = 250
 
     for i in range(0, len(parents), 2):
-        parent1 = parents[i]
-        parent2 = parents[i + 1]
-        x_position1 = 50 + i * spacing
-        x_position2 = 50 + (i+1) * spacing
-        crossover_point = random.randint(0, len(parent1.dna) - 1)
-        child1_dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
-        child2_dna = parent2.dna[:crossover_point] + parent1.dna[crossover_point:]
-        child1 = Flower(canvas, dna=child1_dna, pos=(x_position1, y_position))
-        child2 = Flower(canvas, dna=child2_dna, pos=(x_position2, y_position))
-        children.append(child1)
-        children.append(child2)
+        if len(parents) >= 2:
+            parent1, parent2 = random.sample(parents, 2)
+            parents.remove(parent1)
+            parents.remove(parent2)
+            x_position1 = 50 + i * spacing
+            x_position2 = 50 + (i + 1) * spacing
+            crossover_point = random.randint(0, len(parent1.dna) - 1)
+            child1_dna = parent1.dna[:crossover_point] + parent2.dna[crossover_point:]
+            child2_dna = parent2.dna[:crossover_point] + parent1.dna[crossover_point:]
+            child1 = Flower(canvas, dna=child1_dna, pos=(x_position1, y_position))
+            child2 = Flower(canvas, dna=child2_dna, pos=(x_position2, y_position))
+            children.append(child1)
+            children.append(child2)
+    
     return children
-
 
 def mutate(children):
     for child in children:
